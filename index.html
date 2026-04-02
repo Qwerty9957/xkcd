@@ -6,13 +6,20 @@
 <title>XKCD Viewer</title>
 
 <!-- Favicons -->
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="icon" href="favicon.ico">
 <link rel="shortcut icon" href="favicon.ico">
 
 <style>
-body{
+*{
+  box-sizing:border-box;
+}
+
+html,body{
   margin:0;
+  overflow-x:hidden; /* prevents sideways movement */
+}
+
+body{
   font-family:system-ui;
   background:#0f1115;
   color:#eee;
@@ -56,11 +63,13 @@ input{
 #comicBox{
   padding:20px;
   text-align:center;
-  max-width:900px;
+  max-width:850px; /* slightly narrower */
+  width:100%;
 }
 
 img{
   max-width:100%;
+  height:auto;
   border-radius:12px;
   box-shadow:0 6px 25px rgba(0,0,0,.6);
 }
@@ -73,6 +82,8 @@ img{
 #alt{
   margin-top:14px;
   opacity:.8;
+  max-width:100%;
+  word-wrap:break-word;
 }
 </style>
 </head>
@@ -132,6 +143,9 @@ async function show(num){
 
   current = data.num;
 
+  // save position
+  localStorage.setItem("lastComic", current);
+
   title.textContent = data.num + " — " + data.title;
 
   img.src = data.img;
@@ -146,7 +160,14 @@ async function init(){
 
   maxComic = newest.num;
 
-  show(maxComic);
+  // load saved comic or latest
+  const saved = Number(localStorage.getItem("lastComic"));
+
+  if(saved){
+    show(saved);
+  } else {
+    show(maxComic);
+  }
 
 }
 
@@ -168,13 +189,19 @@ document.getElementById("go").onclick =
   () => show(Number(document.getElementById("jump").value));
 
 
-// arrow keys
+// arrow keys (no sideways scroll)
 
 document.addEventListener("keydown", e=>{
 
-  if(e.key==="ArrowLeft") show(current-1);
+  if(e.key==="ArrowLeft"){
+    e.preventDefault();
+    show(current-1);
+  }
 
-  if(e.key==="ArrowRight") show(current+1);
+  if(e.key==="ArrowRight"){
+    e.preventDefault();
+    show(current+1);
+  }
 
 });
 
